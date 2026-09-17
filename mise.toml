@@ -1,0 +1,23 @@
+[tools]
+android-sdk = "23.0"
+java = "25"
+
+[tasks.build]
+description = "构建 APK (Release)"
+dir = "{{config_root}}"
+run = "./gradlew assembleRelease"
+
+[tasks.debug]
+description = "构建 APK (Debug)"
+dir = "{{config_root}}"
+run = "./gradlew assembleDebug"
+
+[tasks.install]
+description = "安装 APK"
+dir = "{{config_root}}"
+run = "android install --apks app/build/outputs/apk/debug/app-debug.apk"
+
+[tasks.clean]
+description = "清理构建缓存"
+dir = "{{config_root}}"
+run = "./gradlew clean"
