@@ -8,7 +8,7 @@ android {
     namespace = "pochita"
     compileSdk = 37
     defaultConfig {
-        applicationId = "pochita.app"
+        applicationId = "pochita.lsposed"
         minSdk = 26
         targetSdk = 37
         versionCode = 1
