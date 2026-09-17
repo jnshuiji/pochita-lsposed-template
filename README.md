@@ -1,30 +1,30 @@
-# Pochita Android Template 🚀
+# Pochita LSPosed Template 🚀
 
-现代、轻量、开箱即用的 Android 原生开发脚手架模板。
+现代、轻量、开箱即用的 **LSPosed 模块**脚手架模板。
 
-基于最新的 Android 技术栈构建，采用单层扁平化目录架构，彻底解耦代码实现与应用包名，适合作为个人快速孵化新 App 的母版工程。
+基于 **LSPosed 规范 (API 102)** 与 **Jetpack Compose** 构建，采用单层扁平化架构，解耦业务代码与应用包名，无需复杂的反射即可快速孵化 LSPosed 模块。
 
 ---
 
-## 🛠️ 技术栈与环境
+## 🛠️ 技术栈与特性
 
-- **运行时环境**：通过 [mise](https://mise.jdx.dev/) 统一管理
-- **构建工具链**：Android Gradle Plugin (AGP) + Kotlin + Gradle Toolchains
-- **界面与设计**：Jetpack Compose + Material 3
-- **路由导航**：[Navigation 3](https://developer.android.com/guide/navigation)
-- **架构模式**：MVI / MVVM（ViewModel + StateFlow + Repository 数据层）
+- **模块规范**：LSPosed API 102 官方规范 (`io.github.libxposed`)
+- **Hook 机制**：OkHttp 式链式拦截器（`hook.intercept { chain -> ... }`）+ 异常保护模式
+- **热重载支持**：原生支持 LSPosed Hot Reload，模块更新免重启目标进程
+- **界面与设计**：Jetpack Compose + Material 3 + Navigation 3
+- **环境与构建**：[mise](https://mise.jdx.dev/) 统一环境管理 + AGP + Kotlin
 
 ---
 
 ## ⚡ 快速开始
 
 ### 1. 准备环境
-确保本地已安装 [mise](https://mise.jdx.dev/)，进入项目后执行：
+确保本地已安装 [mise](https://mise.jdx.dev/)，在项目根目录执行：
 ```bash
 mise install
 ```
 
-### 2. 构建与运行
+### 2. 构建与安装
 ```bash
 mise run debug    # 编译 Debug APK
 mise run install  # 安装到已连接的手机或模拟器
@@ -33,45 +33,60 @@ mise run clean    # 清理构建缓存
 
 ---
 
-## 🎯 如何使用本模板开发新应用？
+## 🎯 如何基于本模板开发新模块？
 
-使用该模板开发新应用时，**内部代码逻辑与包名无需任何全局替换**，只需 2 步：
+### 1. 修改模块基础信息
+- **修改应用桌面名称**：`app/src/main/res/values/strings.xml`
+  ```xml
+  <string name="app_name">你的模块名称</string>
+  ```
+- **修改模块包名**：`app/build.gradle.kts`
+  ```kotlin
+  defaultConfig {
+      applicationId = "pochita.yourmodule"
+  }
+  ```
 
-1. **修改应用桌面名称**：  
-   打开 `app/src/main/res/values/strings.xml`：
-   ```xml
-   <string name="app_name">你的新应用名称</string>
-   ```
-
-2. **修改应用包名**：  
-   打开 `app/build.gradle.kts`：
-   ```kotlin
-   defaultConfig {
-       applicationId = "pochita.yourapp"
-   }
-   ```
+### 2. 配置 LSPosed 描述文件 (`app/src/main/resources/META-INF/xposed/`)
+遵循 LSPosed 规范，统一在此目录下声明：
+- **`scope.list`**：配置模块目标作用域包名（每行一个）：
+  ```text
+  com.android.settings
+  com.android.systemui
+  ```
+- **`module.prop`**：模块基础属性：
+  ```properties
+  minApiVersion=102
+  targetApiVersion=102
+  defaultExceptionMode=protective
+  staticScope=false
+  autoHotReload=true
+  ```
+- **`java_init.list`**：Hook 入口类声明（默认为 `pochita.hook.MainHook`）。
 
 ---
 
 ## 📂 项目结构
 
 ```text
-pochita-android-template/
-├── mise.toml                    # 工具链与自动化构建任务配置
-├── settings.gradle.kts          # 依赖源与项目级配置
+pochita-lsposed-template/
+├── mise.toml                    # 工具链与自动化构建任务
+├── settings.gradle.kts          # 依赖源配置
 ├── gradle/
-│   ├── libs.versions.toml       # Version Catalog 统一依赖管理
-│   └── wrapper/                 # Gradle Wrapper 运行时
+│   └── libs.versions.toml       # Version Catalog (LSPosed 统一依赖版本)
 └── app/
-    ├── build.gradle.kts         # 模块级构建脚本
+    ├── build.gradle.kts         # 模块构建配置 (minSdk 26, compileOnly API)
     └── src/main/
-        ├── AndroidManifest.xml  # 应用清单文件
-        ├── res/                 # 资源文件 (图标、字符串、主题)
-        └── java/pochita/        # 核心源码
-            ├── MainActivity.kt  # 入口 Activity
+        ├── AndroidManifest.xml  # 应用清单 (自动由 service AAR 合并 XposedProvider)
+        ├── resources/META-INF/xposed/
+        │   ├── module.prop      # 模块属性与热重载配置
+        │   ├── java_init.list   # Hook 入口类路径
+        │   └── scope.list       # 目标作用域包名列表
+        ├── res/                 # 资源文件 (图标、主题、字符串)
+        └── java/pochita/
+            ├── hook/            # 核心 Hook 业务层
+            │   └── MainHook.kt  # LSPosed 模块入口实现
+            ├── MainActivity.kt  # 模块设置页入口 Activity
             ├── Navigation.kt    # Navigation 3 页面路由
-            ├── NavigationKeys.kt# 路由 Key 声明
-            ├── data/            # 数据仓库层
-            ├── theme/           # Material 3 主题
-            └── ui/main/         # 页面 UI (MainScreen) 与 ViewModel
+            └── ui/              # 模块管理与配置 UI (Compose)
 ```
